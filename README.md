@@ -1,4 +1,6 @@
+
 0x11. C - printf team project
+
 Group Project:                                                                      
                                                                                     
 0. I'm not going anywhere. You can print that wherever you want to. I'm here and I'm
@@ -37,7 +39,8 @@ h
 Conversion specifiers to handle: d, i, u, o, x, X                                   
                                                                                     
 9. Print some money and give it to us for the rain forests                          
-Handle the field width for non-custom conversion specifiers.
+Handle the field width for non-custom conversion specifiers.                        
+                                                                                    
 10. The negative is the equivalent of the composer's score, and the print the perfor
 mance                                                                               
 Handle the precision for non-custom conversion specifiers.                          
