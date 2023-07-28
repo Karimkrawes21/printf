@@ -1,78 +1,70 @@
-#include <stdio.h>
-#include <stdarg.h>
+#include "main.h"
 
-/**
- * _printf - Custom implementation of printf function with limited specifiers.
- * @format: The format string.
- *
- * Return: The number of characters printed (excluding the null byte).
- */
+#define BUFF_SIZE 1024
+
+int _printf(const char *format, ...);
+void print_buffer(char buffer[], int *buff_ind);
+
 int _printf(const char *format, ...)
 {
-    va_list args;
-    int count = 0;
+	if (format == NULL)
+		return -1;
 
-    va_start(args, format);
+	va_list args;
+	va_start(args, format);
 
-    while (*format)
-    {
-        if (*format == '%')
-        {
-            format++; // Move to the next character after '%'
+	int printed_chars = 0;
+	int buff_ind = 0;
+	char buffer[BUFF_SIZE] = {0};
 
-            // Handle each conversion specifier
-            switch (*format)
-            {
-                case 'c':
-                    putchar(va_arg(args, int));
-                    count++;
-                    break;
+	for (int i = 0; format[i] != '\0'; i++)
+	{
+		if (format[i] != '%')
+		{
+			buffer[buff_ind++] = format[i];
+			if (buff_ind == BUFF_SIZE)
+			{
+				print_buffer(buffer, &buff_ind);
+			}
+			printed_chars++;
+		}
+		else
+		{
+			print_buffer(buffer, &buff_ind);
 
-                case 's':
-                {
-                    const char *str = va_arg(args, const char *);
-                    while (*str)
-                    {
-                        putchar(*str);
-                        str++;
-                        count++;
-                    }
-                    break;
-                }
+			int flags = get_flags(format, &i);
+			int width = get_width(format, &i, args);
+			int precision = get_precision(format, &i, args);
+			int size = get_size(format, &i);
+			i++;
 
-                case '%':
-                    putchar('%');
-                    count++;
-                    break;
+			int printed = handle_print(format, &i, args, buffer,
+									   flags, width, precision, size);
 
-                default:
-                    putchar('%');
-                    putchar(*format);
-                    count += 2;
-                    break;
-            }
-        }
-        else
-        {
-            putchar(*format);
-            count++;
-        }
+			if (printed == -1)
+			{
+				va_end(args);
+				return -1;
+			}
 
-        format++;
-    }
+			printed_chars += printed;
+		}
+	}
 
-    va_end(args);
+	print_buffer(buffer, &buff_ind);
 
-    return count;
+	va_end(args);
+
+	return printed_chars;
 }
 
-int main(void)
+void print_buffer(char buffer[], int *buff_ind)
 {
-    int len = _printf("Let's try a custom _printf function.\n");
-    _printf("Number of characters printed: %d\n", len);
-    _printf("Character: %c\n", 'A');
-    _printf("String: %s\n", "Hello, world!");
-    _printf("Percentage sign: %%\n");
+	if (*buff_ind > 0)
+	{
+		write(1, buffer, *buff_ind);
+	}
 
-    return 0;
+	*buff_ind = 0;
 }
+
