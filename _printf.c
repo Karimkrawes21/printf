@@ -1,74 +1,78 @@
-#include "main.h"
-
-#define BUFF_SIZE 1024
-
-int handle_print(const char *format, int *i, va_list list, char buffer[], int flags, int width, int precision, int size);
+#include <stdio.h>
+#include <stdarg.h>
 
 /**
- * _printf - Printf function
- * @format: format.
- * Return: Number of characters printed.
+ * _printf - Custom implementation of printf function with limited specifiers.
+ * @format: The format string.
+ *
+ * Return: The number of characters printed (excluding the null byte).
  */
 int _printf(const char *format, ...)
 {
-	int i, printed_chars = 0;
-	int flags, width, precision, size, buff_ind = 0;
-	va_list list;
-	char buffer[BUFF_SIZE];
+    va_list args;
+    int count = 0;
 
-	if (format == NULL)
-		return -1;
+    va_start(args, format);
 
-	va_start(list, format);
+    while (*format)
+    {
+        if (*format == '%')
+        {
+            format++; // Move to the next character after '%'
 
-	for (i = 0; format[i] != '\0'; i++)
-	{
-		if (format[i] != '%')
-		{
-			buffer[buff_ind++] = format[i];
-			if (buff_ind == BUFF_SIZE)
-			{
-				write(1, buffer, buff_ind);
-				printed_chars += buff_ind;
-				buff_ind = 0;
-			}
-			else
-			{
-				printed_chars++;
-			}
-		}
-		else
-		{
-			if (buff_ind > 0)
-			{
-				write(1, buffer, buff_ind);
-				printed_chars += buff_ind;
-				buff_ind = 0;
-			}
+            // Handle each conversion specifier
+            switch (*format)
+            {
+                case 'c':
+                    putchar(va_arg(args, int));
+                    count++;
+                    break;
 
-			flags = get_flags(format, &i);
-			width = get_width(format, &i, list);
-			precision = get_precision(format, &i, list);
-			size = get_size(format, &i);
-			i++; // Move past the '%'
-			int printed = handle_print(format, &i, list, buffer, flags, width, precision, size);
-			if (printed == -1)
-			{
-				va_end(list);
-				return -1;
-			}
-			printed_chars += printed;
-		}
-	}
+                case 's':
+                {
+                    const char *str = va_arg(args, const char *);
+                    while (*str)
+                    {
+                        putchar(*str);
+                        str++;
+                        count++;
+                    }
+                    break;
+                }
 
-	if (buff_ind > 0)
-	{
-		write(1, buffer, buff_ind);
-		printed_chars += buff_ind;
-	}
+                case '%':
+                    putchar('%');
+                    count++;
+                    break;
 
-	va_end(list);
+                default:
+                    putchar('%');
+                    putchar(*format);
+                    count += 2;
+                    break;
+            }
+        }
+        else
+        {
+            putchar(*format);
+            count++;
+        }
 
-	return printed_chars;
+        format++;
+    }
+
+    va_end(args);
+
+    return count;
 }
 
+int main(void)
+{
+    int len = _printf("Let's try a custom _printf function.\n");
+    _printf("Number of characters printed: %d\n", len);
+    _printf("Character: %c\n", 'A');
+    _printf("String: %s\n", "Hello, world!");
+    _printf("Percentage sign: %%\n");
+
+    return 0;
+}
